@@ -30,7 +30,14 @@ def decode_image(file_location="images/encoded_sample.png"):
     decoded_image = Image.new("RGB", encoded_image.size)
     pixels = decoded_image.load()
 
-    pass  # TODO: Fill in decoding functionality
+    for i in range(x_size):
+        for j in range(y_size):
+            red_pixel = red_channel.getpixel((i, j))
+            red_pixel = f'{red_pixel:b}'
+            if red_pixel[-1:] == '0':
+                pixels[i, j] = (0, 0, 0)
+            else:
+                pixels[i, j] = (255, 255, 255)
 
     decoded_image.save("images/decoded_image.png")
 
@@ -67,7 +74,34 @@ def encode_image(text_to_encode, template_image="images/samoyed.jpg"):
     template_image: str
         The image to use for encoding. An image is provided by default.
     """
-    pass  # TODO: Fill out this function
+
+    original_image = Image.open("images/samoyed.jpg")
+    original_r, original_g, original_b = original_image.split()
+
+    x_size = original_image.size[0]
+    y_size = original_image.size[1]
+
+    text_image = write_text(text_to_encode,(x_size, y_size))
+    text_r = text_image.split()[0]
+
+    encoded_image = Image.new("RGB", original_image.size)
+    pixels = encoded_image.load()
+
+    for i in range(x_size):
+        for j in range(y_size):
+            text_pixel = text_r.getpixel((i, j))
+            original_pixel = original_r.getpixel((i, j))
+            original_pixel = f'{original_pixel:b}'
+            if text_pixel == 0:
+                encoded_pixel = original_pixel[:-1] + '0'
+                encoded_pixel = int(encoded_pixel, 2)
+                pixels[i, j] = (encoded_pixel, original_g.getpixel((i, j)), original_b.getpixel((i, j)))
+            else:
+                encoded_pixel = original_pixel[:-1] + '1'
+                encoded_pixel = int(encoded_pixel, 2)
+                pixels[i, j] = (encoded_pixel, original_g.getpixel((i, j)), original_b.getpixel((i, j)))
+
+    encoded_image.save('images/encoded_samoyed.png')
 
 
 if __name__ == '__main__':
@@ -75,4 +109,5 @@ if __name__ == '__main__':
     decode_image()
 
     print("Encoding the image...")
-    encode_image()
+    encode_image('MARION: sorry this is late :/')
+    decode_image("images/encoded_samoyed.png")
